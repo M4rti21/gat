@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	file, err := os.Open("./username.csv")
+	file, err := os.Open("./testfiles/username.csv")
 	if err != nil {
 		panic(err)
 	}
