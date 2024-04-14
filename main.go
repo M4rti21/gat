@@ -2,7 +2,7 @@ package main
 
 import (
 	"bufio"
-	"errors"
+	"flag"
 	"fmt"
 	"os"
 	"strings"
@@ -10,7 +10,11 @@ import (
 )
 
 func main() {
-	file, err := os.Open("./testfiles/username.csv")
+	var delimiter = flag.String("d", ";", "delimiter")
+	fmt.Println(*delimiter)
+	path := os.Args[1]
+	flag.Parse()
+	file, err := os.Open(path)
 	if err != nil {
 		panic(err)
 	}
@@ -28,16 +32,11 @@ func main() {
 		panic(err)
 	}
 
-	delimiter, err := getDelimiter(lines)
-	if err != nil {
-		panic(err)
-	}
-
-	colMaxLen := make([]int, len(strings.Split(lines[0], delimiter)))
+	colMaxLen := make([]int, len(strings.Split(lines[0], *delimiter)))
 
 	var table [][]string
 	for _, line := range lines {
-		cols := strings.Split(line, delimiter)
+		cols := strings.Split(line, *delimiter)
 		for i, col := range cols {
 			if colMaxLen[i] < utf8.RuneCountInString(col) {
 				colMaxLen[i] = utf8.RuneCountInString(col)
@@ -46,29 +45,17 @@ func main() {
 		table = append(table, cols)
 	}
 
-	printCSV("username.csv", table, colMaxLen)
+	printCSV(path, table, colMaxLen)
 
-}
-
-func getDelimiter(lines []string) (string, error) {
-	delimiters := []string{";", ",", ":", "|"}
-	for _, d := range delimiters {
-		len1 := len(strings.Split(lines[0], d))
-		len2 := len(strings.Split(lines[1], d))
-		if len1 == len2 {
-			return d, nil
-		}
-	}
-	return "", errors.New("Delimiter not found")
 }
 
 func printCSV(filename string, table [][]string, colMaxLen []int) {
 	widthNums := 1
-	width := sum(colMaxLen) + widthNums
+	widthCols := sum(colMaxLen)
 	colCount := len(colMaxLen)
-	totalWidth := 2 + width + (colCount * 2)
-	fmt.Printf("┏%s┓\n", strings.Repeat("━", totalWidth+colCount))
-	fmt.Printf("┃ %-*s┃\n", totalWidth+3, filename)
+	widthTotal := (widthNums + 2) + widthCols + (colCount * 2)
+	fmt.Printf("┏%s┓\n", strings.Repeat("━", widthTotal+colCount))
+	fmt.Printf("┃ %-*s ┃\n", widthTotal+3, filename)
 	for i, row := range table {
 		fmt.Printf("┣━%s━", strings.Repeat("━", widthNums))
 		if i == 0 {
