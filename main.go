@@ -10,11 +10,10 @@ import (
 )
 
 func main() {
+	var path = flag.String("f", "", "filepath")
 	var delimiter = flag.String("d", ";", "delimiter")
-	fmt.Println(*delimiter)
-	path := os.Args[1]
 	flag.Parse()
-	file, err := os.Open(path)
+	file, err := os.Open(*path)
 	if err != nil {
 		panic(err)
 	}
@@ -45,7 +44,7 @@ func main() {
 		table = append(table, cols)
 	}
 
-	printCSV(path, table, colMaxLen)
+	printCSV(*path, table, colMaxLen)
 
 }
 
